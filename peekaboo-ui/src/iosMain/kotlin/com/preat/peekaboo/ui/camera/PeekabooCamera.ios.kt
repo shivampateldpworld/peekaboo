@@ -18,6 +18,7 @@ package com.preat.peekaboo.ui.camera
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -115,6 +116,8 @@ import platform.darwin.dispatch_group_leave
 import platform.darwin.dispatch_group_notify
 import platform.darwin.dispatch_queue_create
 import platform.posix.memcpy
+import platform.CoreGraphics.CGFloat
+import platform.CoreVideo.kCVPixelFormatType_32BGRA
 
 private val deviceTypes =
     listOf(
@@ -125,8 +128,11 @@ private val deviceTypes =
         AVCaptureDeviceTypeBuiltInDuoCamera,
     )
 
+public fun Float.toCGFloat(): CGFloat = this.toDouble()
+public fun Double.toCGFloat(): CGFloat = this
+
 @Composable
-actual fun PeekabooCamera(
+public actual fun PeekabooCamera(
     state: PeekabooCameraState,
     modifier: Modifier,
     permissionDeniedContent: @Composable () -> Unit,
@@ -180,7 +186,7 @@ actual fun PeekabooCamera(
 }
 
 @Composable
-actual fun PeekabooCamera(
+public actual fun PeekabooCamera(
     modifier: Modifier,
     cameraMode: CameraMode,
     captureIcon: @Composable (onClick: () -> Unit) -> Unit,
@@ -591,10 +597,10 @@ private fun RealDeviceCamera(
                     val captureQueue = dispatch_queue_create("sampleBufferQueue", attr = null)
                     videoOutput.setSampleBufferDelegate(frameAnalyzerDelegate, captureQueue)
                     videoOutput.alwaysDiscardsLateVideoFrames = true
-                    videoOutput.videoSettings =
-                        mapOf(
-                            kCVPixelBufferPixelFormatTypeKey to kCMPixelFormat_32BGRA,
-                        )
+//                    videoOutput.videoSettings =
+//                        mapOf(
+//                            kCVPixelBufferPixelFormatTypeKey to kCVPixelFormatType_32BGRA,
+//                        )
                     captureSession.addOutput(videoOutput)
                 }
             }
@@ -689,7 +695,7 @@ private fun RealDeviceCamera(
     )
 }
 
-class OrientationListener(
+public class OrientationListener(
     private val cameraPreviewLayer: AVCaptureVideoPreviewLayer,
     private val capturePhotoOutput: AVCapturePhotoOutput,
     private val videoOutput: AVCaptureVideoDataOutput,
@@ -697,7 +703,7 @@ class OrientationListener(
     @OptIn(BetaInteropApi::class)
     @Suppress("UNUSED_PARAMETER")
     @ObjCAction
-    fun orientationDidChange(arg: NSNotification) {
+    public fun orientationDidChange(arg: NSNotification) {
         val cameraConnection = cameraPreviewLayer.connection
         val actualOrientation =
             when (UIDevice.currentDevice.orientation) {
@@ -725,7 +731,7 @@ class OrientationListener(
     }
 }
 
-class CameraFrameAnalyzerDelegate(
+public class CameraFrameAnalyzerDelegate(
     private val onFrame: ((frame: ByteArray) -> Unit)?,
 ) : NSObject(), AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
     @OptIn(ExperimentalForeignApi::class)
@@ -749,7 +755,7 @@ class CameraFrameAnalyzerDelegate(
     }
 }
 
-class PhotoCaptureDelegate(
+public class PhotoCaptureDelegate(
     private val onCaptureEnd: () -> Unit,
     private val onCapture: (byteArray: ByteArray?) -> Unit,
 ) : NSObject(), AVCapturePhotoCaptureDelegateProtocol {
